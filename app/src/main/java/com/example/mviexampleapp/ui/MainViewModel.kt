@@ -41,8 +41,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             state.value = MainState.Loading
             try {
-                val result = repository.getHeadlineNews()
-                when (result) {
+                when (val result = repository.getHeadlineNews()) {
                     is Resource.Loading -> {
                         state.value = MainState.Loading
                     }
