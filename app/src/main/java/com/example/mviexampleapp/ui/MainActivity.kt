@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.example.mviexampleapp.model.Articles
 import com.example.mviexampleapp.ui.component.MainState
 import com.example.mviexampleapp.ui.theme.MVIExampleAppTheme
+import com.example.mviexampleapp.utils.toDate
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -109,8 +110,11 @@ fun NewsItem(news: Articles) {
             news.title?.let {
                 Text(text = it, fontWeight = FontWeight.Bold)
             }
-            news.description?.let {
-                Text(text = it)
+            Box(modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomStart) {
+                news.publishedAt?.let {
+                    Text(text = it.toDate() )
+                }
             }
         }
     }
