@@ -34,7 +34,9 @@ class NewsListViewModel @Inject constructor(
         viewModelScope.launch {
             userIntent.consumeAsFlow().collect {
                 when (it) {
-                    is MainIntent.GetNews -> getNews(category = it.category)
+                    is MainIntent.GetNews -> {
+                        getNews(category = it.category)
+                    }
                 }
             }
         }

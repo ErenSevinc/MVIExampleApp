@@ -1,5 +1,6 @@
 package com.example.mviexampleapp.ui.screens.detail
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -19,12 +20,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.mviexampleapp.ui.component.MainScreen
 
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun NewsDetailPage(navController: NavController, url: String) {
+fun NewsDetailPage(url: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 10.dp, end = 10.dp, top = 65.dp, bottom = 10.dp),
+            .padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -36,6 +38,9 @@ fun NewsDetailPage(navController: NavController, url: String) {
                 )
 
                 webViewClient = WebViewClient()
+                settings.javaScriptEnabled = true
+                settings.userAgentString = System.getProperty("http.agent")
+
                 loadUrl(url)
             }
         }, update = {

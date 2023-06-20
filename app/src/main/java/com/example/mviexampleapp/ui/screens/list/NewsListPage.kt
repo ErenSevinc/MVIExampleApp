@@ -1,6 +1,13 @@
 package com.example.mviexampleapp.ui.screens.list
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,9 +18,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,10 +34,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +54,7 @@ import com.example.mviexampleapp.ui.component.MainState
 import com.example.mviexampleapp.utils.Constant
 import com.example.mviexampleapp.utils.toDate
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.coroutineContext
@@ -53,17 +65,16 @@ fun NewsListPage(navContorller: NavController) {
     val viewModel: NewsListViewModel = hiltViewModel()
     val screenState = viewModel.state.collectAsState()
     val selectedCategoty = remember { mutableStateOf(Constant.CATEGORY_GENERAL) }
-    val isChangeCategory = remember { mutableStateOf(false) }
     val list = listOf(
-            Constant.CATEGORY_BUSINESS,
-            Constant.CATEGORY_ENTERTAINMENT,
-            Constant.CATEGORY_GENERAL,
-            Constant.CATEGORY_HEALTH,
-            Constant.CATEGORY_SCIENCE,
-            Constant.CATEGORY_SPORTS,
-            Constant.CATEGORY_TECHNOLOGY
-        )
-
+        Constant.CATEGORY_GENERAL,
+        Constant.CATEGORY_BUSINESS,
+        Constant.CATEGORY_ENTERTAINMENT,
+        Constant.CATEGORY_HEALTH,
+        Constant.CATEGORY_SCIENCE,
+        Constant.CATEGORY_SPORTS,
+        Constant.CATEGORY_TECHNOLOGY
+    )
+    val selectedIndex = remember { mutableStateOf(list.indexOf(selectedCategoty.value)) }
 
     LaunchedEffect(screenState) {
         if (screenState.value == MainState.Idle) {
@@ -73,34 +84,38 @@ fun NewsListPage(navContorller: NavController) {
 
     with(screenState) {
         val result = this.value
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 65.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+
+        AnimatedVisibility(
+            visible = result is MainState.Loading,
+            enter = fadeIn(),
+            exit = fadeOut()
         ) {
-            when (result) {
-                is MainState.Idle -> {
-
-                }
-
-                is MainState.Loading -> {
-                    LoadingScreen()
-                }
-
-                is MainState.News -> {
-                    result.news.articles?.let {
-                        CategoryList(viewModel, list, selectedCategoty, isChangeCategory)
-                        NewsList(news = it, navContorller = navContorller)
-                    }
-                }
-
-                is MainState.Error -> {
-                    Toast.makeText(LocalContext.current, result.error ?: "", Toast.LENGTH_LONG)
-                        .show()
+            LoadingScreen()
+        }
+        AnimatedVisibility(
+            visible = result is MainState.News,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            (result as? MainState.News)?.news?.articles?.let {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CategoryList(viewModel, list, selectedCategoty, selectedIndex)
+                    NewsList(news = it, navContorller = navContorller)
                 }
             }
+        }
+        AnimatedVisibility(visible = result is MainState.Error) {
+            Toast.makeText(
+                LocalContext.current,
+                (result as? MainState.Error)?.error ?: "",
+                Toast.LENGTH_LONG
+            )
+                .show()
         }
     }
 }
@@ -116,25 +131,47 @@ fun LoadingScreen() {
 }
 
 @Composable
-fun CategoryList(viewModel: NewsListViewModel, list: List<String>, category: MutableState<String>, isChange: MutableState<Boolean>) {
+fun CategoryList(
+    viewModel: NewsListViewModel,
+    list: List<String>,
+    category: MutableState<String>,
+    selectedIndex: MutableState<Int>
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val state = rememberLazyListState()
+
+    LaunchedEffect(selectedIndex) {
+        state.animateScrollToItem(selectedIndex.value)
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = "Categories", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        LazyRow {
-            items(items = list) {
+        Text(
+            modifier = Modifier
+                .padding(top = 5.dp)
+                .align(Alignment.CenterHorizontally),
+            text = "Categories",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+        LazyRow(state = state) {
+            itemsIndexed(items = list) { index, item ->
                 OutlinedButton(
                     onClick = {
-                        category.value = it
-                        isChange.value = true
+                        category.value = item
+                        selectedIndex.value = index
+                        coroutineScope.launch {
+                            viewModel.userIntent.send(MainIntent.GetNews(category = item))
+                        }
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (category.value == it) Color.DarkGray else Color.LightGray,
-                        contentColor = if (category.value == it) Color.White else Color.DarkGray
+                        containerColor = if (category.value == item) Color.DarkGray else Color.LightGray,
+                        contentColor = if (category.value == item) Color.White else Color.DarkGray
                     ),
                     border = BorderStroke(1.dp, Color.DarkGray),
                     modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                     shape = RoundedCornerShape(5.dp)
                 ) {
-                    Text(text = it.capitalize())
+                    Text(text = item.capitalize())
                 }
             }
         }
@@ -143,13 +180,25 @@ fun CategoryList(viewModel: NewsListViewModel, list: List<String>, category: Mut
 
 @Composable
 fun NewsList(news: List<Articles>, navContorller: NavController) {
-    LazyColumn {
-        items(items = news) { item ->
-            NewsItem(item) {
-                val encodedUrl = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
-                navContorller.navigate(MainScreen.NewsDetail.route + "/" + encodedUrl)
+    Column() {
+        Text(
+            modifier = Modifier
+                .padding(4.dp)
+                .align(Alignment.CenterHorizontally),
+            text = "News List",
+            fontWeight = FontWeight.Bold
+        )
+        LazyColumn(modifier = Modifier.padding(top = 2.dp)) {
+            items(items = news) { item ->
+                NewsItem(item) {
+                    val encodedUrl = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
+                    navContorller.navigate(MainScreen.NewsDetail.route + "/" + encodedUrl)
+                }
+                Divider(
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                )
             }
-            Divider(color = Color.LightGray, modifier = Modifier.padding(top = 4.dp, bottom = 4.dp))
         }
     }
 }
@@ -159,7 +208,7 @@ fun NewsItem(news: Articles, onClick: (url: String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .wrapContentHeight()
             .clickable { onClick.invoke(news.url ?: "https://www.google.com") }
     ) {
         val url = news.url
@@ -167,10 +216,14 @@ fun NewsItem(news: Articles, onClick: (url: String) -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 4.dp)
+                .padding(2.dp)
         ) {
             news.title?.let {
-                Text(text = it, fontWeight = FontWeight.Bold)
+                Text(
+                    modifier = Modifier.padding(horizontal = 3.dp),
+                    text = it,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Box(
                 modifier = Modifier.fillMaxSize(),

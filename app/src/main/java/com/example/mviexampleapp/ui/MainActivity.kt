@@ -42,11 +42,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mviexampleapp.model.Articles
+import com.example.mviexampleapp.ui.component.MainIntent
 import com.example.mviexampleapp.ui.component.MainNavigation
 import com.example.mviexampleapp.ui.component.MainScreen
 import com.example.mviexampleapp.ui.component.MainState
@@ -54,9 +56,12 @@ import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 import com.example.mviexampleapp.ui.theme.MVIExampleAppTheme
 import com.example.mviexampleapp.utils.toDate
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val newsListViewModel: NewsListViewModel by viewModels()
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +94,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     ) {
-                        MainNavigation(navController = navContorller, toolbarTitle = toolbarTitle)
+                        MainNavigation(navController = navContorller, toolbarTitle = toolbarTitle, paddingValues = it)
                     }
                 }
             }

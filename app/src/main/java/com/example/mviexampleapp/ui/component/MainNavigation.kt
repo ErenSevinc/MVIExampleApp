@@ -1,7 +1,10 @@
 package com.example.mviexampleapp.ui.component
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -16,10 +19,11 @@ import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 @Composable
 fun MainNavigation(
     navController: NavHostController,
-    toolbarTitle: MutableState<String>
+    toolbarTitle: MutableState<String>,
+    paddingValues: PaddingValues
 ) {
 
-    NavHost(navController = navController, startDestination = MainScreen.NewsList.route) {
+    NavHost(modifier = Modifier.padding(paddingValues),navController = navController, startDestination = MainScreen.NewsList.route) {
         composable(route = MainScreen.NewsList.route) {
             toolbarTitle.value = "News List"
             NewsListPage(navController)
@@ -31,7 +35,7 @@ fun MainNavigation(
             })
         ){
             toolbarTitle.value = "News Detail"
-            NewsDetailPage(navController = navController, it.arguments?.getString("url") ?: "")
+            NewsDetailPage( it.arguments?.getString("url") ?: "")
         }
     }
 }
