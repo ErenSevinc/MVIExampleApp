@@ -16,14 +16,13 @@ import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 @Composable
 fun MainNavigation(
     navController: NavHostController,
-    toolbarTitle: MutableState<String>,
-    vm: NewsListViewModel
+    toolbarTitle: MutableState<String>
 ) {
 
     NavHost(navController = navController, startDestination = MainScreen.NewsList.route) {
         composable(route = MainScreen.NewsList.route) {
             toolbarTitle.value = "News List"
-            NewsListPage(navController, vm)
+            NewsListPage(navController)
         }
         composable(
             route = MainScreen.NewsDetail.route + "/{url}",

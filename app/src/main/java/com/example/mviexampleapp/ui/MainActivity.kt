@@ -57,16 +57,12 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private val viewModel: NewsListViewModel by viewModels()
-    lateinit var navContorller: NavHostController
-
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            navContorller = rememberNavController()
+            val navContorller = rememberNavController()
             val navBackStackEntry by navContorller.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route ?: ""
             val toolbarTitle = remember { mutableStateOf("") }
@@ -93,7 +89,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     ) {
-                        MainNavigation(navController = navContorller, toolbarTitle = toolbarTitle, vm = viewModel)
+                        MainNavigation(navController = navContorller, toolbarTitle = toolbarTitle)
                     }
                 }
             }

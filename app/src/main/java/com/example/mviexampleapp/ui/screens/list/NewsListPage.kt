@@ -22,6 +22,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,51 +34,72 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mviexampleapp.model.Articles
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.mviexampleapp.ui.component.MainIntent
 import com.example.mviexampleapp.ui.component.MainScreen
 import com.example.mviexampleapp.ui.component.MainState
 import com.example.mviexampleapp.utils.Constant
 import com.example.mviexampleapp.utils.toDate
+import kotlinx.coroutines.coroutineScope
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import kotlin.coroutines.coroutineContext
 
 
 @Composable
-fun NewsListPage(navContorller: NavController, newsVM: NewsListViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 65.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+fun NewsListPage(navContorller: NavController) {
+    val viewModel: NewsListViewModel = hiltViewModel()
+    val screenState = viewModel.state.collectAsState()
+    val selectedCategoty = remember { mutableStateOf(Constant.CATEGORY_GENERAL) }
+    val isChangeCategory = remember { mutableStateOf(false) }
+    val list = listOf(
+            Constant.CATEGORY_BUSINESS,
+            Constant.CATEGORY_ENTERTAINMENT,
+            Constant.CATEGORY_GENERAL,
+            Constant.CATEGORY_HEALTH,
+            Constant.CATEGORY_SCIENCE,
+            Constant.CATEGORY_SPORTS,
+            Constant.CATEGORY_TECHNOLOGY
+        )
 
-        //CategoryList()
-        CategoryList(vm = newsVM, navContorller = navContorller)
+
+    LaunchedEffect(screenState) {
+        if (screenState.value == MainState.Idle) {
+            viewModel.userIntent.send(MainIntent.GetNews(selectedCategoty.value))
+        }
     }
-}
 
-@Composable
-fun Greeting(vm: NewsListViewModel, modifier: Modifier = Modifier, navContorller: NavController) {
-    when (val state = vm.state.value) {
-        is MainState.Idle -> {
+    with(screenState) {
+        val result = this.value
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 65.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            when (result) {
+                is MainState.Idle -> {
 
-        }
+                }
 
-        is MainState.Loading -> {
-            LoadingScreen()
-        }
+                is MainState.Loading -> {
+                    LoadingScreen()
+                }
 
-        is MainState.Error -> {
-            Toast.makeText(LocalContext.current, state.error, Toast.LENGTH_LONG).show()
-        }
+                is MainState.News -> {
+                    result.news.articles?.let {
+                        CategoryList(viewModel, list, selectedCategoty, isChangeCategory)
+                        NewsList(news = it, navContorller = navContorller)
+                    }
+                }
 
-        is MainState.News -> {
-            state.news.articles?.let {
-                NewsList(news = it, navContorller = navContorller)
+                is MainState.Error -> {
+                    Toast.makeText(LocalContext.current, result.error ?: "", Toast.LENGTH_LONG)
+                        .show()
+                }
             }
         }
     }
@@ -92,30 +116,19 @@ fun LoadingScreen() {
 }
 
 @Composable
-fun CategoryList(vm: NewsListViewModel, modifier: Modifier = Modifier, navContorller: NavController) {
-    val list =
-        listOf(
-            Constant.CATEGORY_BUSINESS,
-            Constant.CATEGORY_ENTERTAINMENT,
-            Constant.CATEGORY_GENERAL,
-            Constant.CATEGORY_HEALTH,
-            Constant.CATEGORY_SCIENCE,
-            Constant.CATEGORY_SPORTS,
-            Constant.CATEGORY_TECHNOLOGY
-        )
-    val selectedCategoty = remember { mutableStateOf(Constant.CATEGORY_GENERAL) }
-    Column(modifier = Modifier.fillMaxSize()) {
+fun CategoryList(viewModel: NewsListViewModel, list: List<String>, category: MutableState<String>, isChange: MutableState<Boolean>) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(text = "Categories", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         LazyRow {
             items(items = list) {
                 OutlinedButton(
                     onClick = {
-                        selectedCategoty.value = it
-                        vm.getNews(it)
+                        category.value = it
+                        isChange.value = true
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (selectedCategoty.value == it) Color.DarkGray else Color.LightGray,
-                        contentColor = if (selectedCategoty.value == it) Color.White else Color.DarkGray
+                        containerColor = if (category.value == it) Color.DarkGray else Color.LightGray,
+                        contentColor = if (category.value == it) Color.White else Color.DarkGray
                     ),
                     border = BorderStroke(1.dp, Color.DarkGray),
                     modifier = Modifier.padding(start = 4.dp, end = 4.dp),
@@ -125,7 +138,6 @@ fun CategoryList(vm: NewsListViewModel, modifier: Modifier = Modifier, navContor
                 }
             }
         }
-        Greeting(vm = vm, navContorller = navContorller)
     }
 }
 

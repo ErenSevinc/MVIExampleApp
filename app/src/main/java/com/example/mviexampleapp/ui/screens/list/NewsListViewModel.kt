@@ -10,6 +10,8 @@ import com.example.mviexampleapp.utils.Constant
 import com.example.mviexampleapp.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -21,45 +23,51 @@ class NewsListViewModel @Inject constructor(
 ) : ViewModel() {
 
     val userIntent = Channel<MainIntent>(Channel.UNLIMITED)
-    val state = mutableStateOf<MainState>(MainState.Idle)
+    private val _state = MutableStateFlow<MainState>(MainState.Idle)
+    val state: StateFlow<MainState> = _state
 
     init {
-        getNews(category = Constant.CATEGORY_GENERAL)
+        handleIntent()
     }
 
     private fun handleIntent() {
         viewModelScope.launch {
             userIntent.consumeAsFlow().collect {
                 when (it) {
-                    is MainIntent.GetNews -> getNews(category = Constant.CATEGORY_GENERAL)
+                    is MainIntent.GetNews -> getNews(category = it.category)
                 }
             }
         }
     }
 
-    fun getNews(category: String?) {
+    private fun getNews(category: String) {
         viewModelScope.launch {
-            state.value = MainState.Loading
+            _state.value = MainState.Loading
             try {
                 when (val result = repository.getHeadlineNews(category = category)) {
                     is Resource.Loading -> {
-                        state.value = MainState.Loading
+                        _state.value = MainState.Loading
                     }
 
                     is Resource.Error -> {
-                        state.value = MainState.Error(result.errorMessage)
+                        _state.value = MainState.Error(result.errorMessage)
                     }
 
                     is Resource.Success -> {
                         result.data?.let { response ->
-                            state.value = MainState.News(news = response)
+                            _state.value = MainState.News(news = response)
                         }
                     }
                 }
             } catch (e: Exception) {
-                state.value = MainState.Error(error = e.localizedMessage.toString())
+                _state.value = MainState.Error(error = e.localizedMessage.toString())
             }
 
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        userIntent.close()
     }
 }

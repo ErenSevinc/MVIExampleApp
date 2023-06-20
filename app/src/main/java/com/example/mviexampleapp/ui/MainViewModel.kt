@@ -15,50 +15,6 @@ import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
-    private val repository: ApiRepository
-) : ViewModel() {
+class MainViewModel @Inject constructor() : ViewModel() {
 
-    val userIntent = Channel<MainIntent>(Channel.UNLIMITED)
-    val state = mutableStateOf<MainState>(MainState.Idle)
-
-    init {
-        getNews()
-    }
-
-    private fun handleIntent() {
-        viewModelScope.launch {
-            userIntent.consumeAsFlow().collect {
-                when (it) {
-                    is MainIntent.GetNews -> getNews()
-                }
-            }
-        }
-    }
-
-    private fun getNews() {
-        viewModelScope.launch {
-            state.value = MainState.Loading
-            try {
-                when (val result = repository.getHeadlineNews()) {
-                    is Resource.Loading -> {
-                        state.value = MainState.Loading
-                    }
-
-                    is Resource.Error -> {
-                        state.value = MainState.Error(result.errorMessage)
-                    }
-
-                    is Resource.Success -> {
-                        result.data?.let { response ->
-                            state.value = MainState.News(news = response)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                state.value = MainState.Error(error = e.localizedMessage.toString())
-            }
-
-        }
-    }
 }
