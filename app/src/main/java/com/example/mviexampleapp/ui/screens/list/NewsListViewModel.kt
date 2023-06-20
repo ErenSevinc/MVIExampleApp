@@ -1,4 +1,4 @@
-package com.example.mviexampleapp.ui
+package com.example.mviexampleapp.ui.screens.list
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mviexampleapp.network.ApiRepository
 import com.example.mviexampleapp.ui.component.MainIntent
 import com.example.mviexampleapp.ui.component.MainState
+import com.example.mviexampleapp.utils.Constant
 import com.example.mviexampleapp.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -15,7 +16,7 @@ import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class NewsListViewModel @Inject constructor(
     private val repository: ApiRepository
 ) : ViewModel() {
 
@@ -23,24 +24,24 @@ class MainViewModel @Inject constructor(
     val state = mutableStateOf<MainState>(MainState.Idle)
 
     init {
-        getNews()
+        getNews(category = Constant.CATEGORY_GENERAL)
     }
 
     private fun handleIntent() {
         viewModelScope.launch {
             userIntent.consumeAsFlow().collect {
                 when (it) {
-                    is MainIntent.GetNews -> getNews()
+                    is MainIntent.GetNews -> getNews(category = Constant.CATEGORY_GENERAL)
                 }
             }
         }
     }
 
-    private fun getNews() {
+    fun getNews(category: String?) {
         viewModelScope.launch {
             state.value = MainState.Loading
             try {
-                when (val result = repository.getHeadlineNews()) {
+                when (val result = repository.getHeadlineNews(category = category)) {
                     is Resource.Loading -> {
                         state.value = MainState.Loading
                     }
