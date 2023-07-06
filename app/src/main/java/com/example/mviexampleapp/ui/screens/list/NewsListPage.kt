@@ -147,11 +147,11 @@ fun CategoryList(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier
-                .padding(top = 5.dp)
+                .padding(vertical = 8.dp)
                 .align(Alignment.CenterHorizontally),
             text = "Categories",
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            fontSize = 18.sp
         )
         LazyRow(state = state) {
             itemsIndexed(items = list) { index, item ->
@@ -183,9 +183,10 @@ fun NewsList(news: List<Articles>, navContorller: NavController) {
     Column() {
         Text(
             modifier = Modifier
-                .padding(4.dp)
+                .padding(vertical = 8.dp)
                 .align(Alignment.CenterHorizontally),
             text = "News List",
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
         LazyColumn(modifier = Modifier.padding(top = 2.dp)) {
