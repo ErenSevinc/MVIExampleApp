@@ -19,6 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.BookmarkAdded
+import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,8 +75,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navContorller = rememberNavController()
-            val navBackStackEntry by navContorller.currentBackStackEntryAsState()
+            val navController = rememberNavController()
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route ?: ""
             val toolbarTitle = remember { mutableStateOf("") }
 
@@ -82,7 +90,7 @@ class MainActivity : ComponentActivity() {
                                 },
                                 navigationIcon = {
                                     if (currentRoute.isNotEmpty() && currentRoute != MainScreen.NewsList.route) {
-                                        IconButton(onClick = { navContorller.navigateUp() }) {
+                                        IconButton(onClick = { navController.navigateUp() }) {
                                             Icon(
                                                 Icons.Filled.ArrowBack,
                                                 contentDescription = "Back Icon"
@@ -90,11 +98,20 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 },
-                                colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Color.LightGray)
+                                colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Color.LightGray),
+                                actions = {
+                                    // TODO
+                                    IconButton(onClick = { navController.navigate(MainScreen.Favourites.route) }) {
+                                        Icon(
+                                            Icons.Outlined.BookmarkBorder,
+                                            contentDescription = "Fav Icon"
+                                        )
+                                    }
+                                }
                             )
                         }
                     ) {
-                        MainNavigation(navController = navContorller, toolbarTitle = toolbarTitle, paddingValues = it)
+                        MainNavigation(navController = navController, toolbarTitle = toolbarTitle, paddingValues = it)
                     }
                 }
             }

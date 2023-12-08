@@ -37,5 +37,13 @@ fun MainNavigation(
             toolbarTitle.value = "News Detail"
             NewsDetailPage( it.arguments?.getString("url") ?: "")
         }
+        composable(
+
+            // TODO
+            route = MainScreen.Favourites.route,
+        ){
+            toolbarTitle.value = "Fav News"
+            //TODO new screen
+        }
     }
 }
