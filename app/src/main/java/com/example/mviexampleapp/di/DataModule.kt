@@ -1,5 +1,10 @@
 package com.example.mviexampleapp.di
 
+import android.app.Application
+import androidx.room.Room
+import com.example.mviexampleapp.db.ArticlesRepository
+import com.example.mviexampleapp.db.ArticlesRepositoryImpl
+import com.example.mviexampleapp.db.MyDatabase
 import com.example.mviexampleapp.network.ApiRepository
 import com.example.mviexampleapp.network.ApiService
 import com.example.mviexampleapp.utils.Constant
@@ -58,5 +63,22 @@ class DataModule {
     @Provides
     fun provideRepository(apiService: ApiService): ApiRepository {
         return ApiRepository(apiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMyDataBase(app: Application): MyDatabase {
+        return Room.databaseBuilder(
+            app,
+            MyDatabase::class.java,
+            "MyDataBase"
+        ).build()
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideMyRepository(mydb: MyDatabase): ArticlesRepository {
+        return ArticlesRepositoryImpl(mydb.dao)
     }
 }

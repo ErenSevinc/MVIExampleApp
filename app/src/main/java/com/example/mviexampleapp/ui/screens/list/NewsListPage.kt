@@ -9,11 +9,13 @@ import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,9 +28,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,13 +47,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mviexampleapp.model.Articles
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.mviexampleapp.R
 import com.example.mviexampleapp.ui.component.MainIntent
 import com.example.mviexampleapp.ui.component.MainScreen
 import com.example.mviexampleapp.ui.component.MainState
@@ -105,7 +114,7 @@ fun NewsListPage(navContorller: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     CategoryList(viewModel, list, selectedCategoty, selectedIndex)
-                    NewsList(news = it, navContorller = navContorller)
+                    NewsList(news = it, navContorller = navContorller, viewModel)
                 }
             }
         }
@@ -179,7 +188,7 @@ fun CategoryList(
 }
 
 @Composable
-fun NewsList(news: List<Articles>, navContorller: NavController) {
+fun NewsList(news: List<Articles>, navContorller: NavController, viewModel: NewsListViewModel) {
     Column() {
         Text(
             modifier = Modifier
@@ -191,6 +200,7 @@ fun NewsList(news: List<Articles>, navContorller: NavController) {
         )
         LazyColumn(modifier = Modifier.padding(top = 2.dp)) {
             items(items = news) { item ->
+                /*
                 NewsItem(item) {
                     val encodedUrl = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
                     navContorller.navigate(MainScreen.NewsDetail.route + "/" + encodedUrl)
@@ -199,6 +209,11 @@ fun NewsList(news: List<Articles>, navContorller: NavController) {
                     color = Color.LightGray,
                     modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
                 )
+                 */
+                NewsCardItem(news = item, viewModel = viewModel) {
+                    val encodedUrl = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
+                    navContorller.navigate(MainScreen.NewsDetail.route + "/" + encodedUrl)
+                }
             }
         }
     }
@@ -234,6 +249,71 @@ fun NewsItem(news: Articles, onClick: (url: String) -> Unit) {
                     Text(text = it.toDate())
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: String) -> Unit) {
+    val isButtonClicked = remember { mutableStateOf(false) }
+    var buttonText = remember { mutableStateOf("Fav") }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(370.dp)
+            .padding(8.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.LightGray
+        )
+    ) {
+        Column(modifier = Modifier
+            .padding(4.dp)
+            .clickable { onClick.invoke(news.url ?: "https://www.google.com") }
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                painter = painterResource(id = R.drawable.news),
+                contentDescription = "",
+                contentScale = ContentScale.Crop
+            )
+
+            Column(modifier = Modifier.padding(vertical = 20.dp, horizontal = 15.dp)) {
+                Text(
+                    text = news.title ?: "",
+                    color = Color.Black,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Divider(
+                    color = Color.DarkGray,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = news.publishedAt?.toDate() ?: "", color = Color.Black,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 10.sp
+                    )
+                    Spacer(modifier = Modifier)
+                    OutlinedButton(onClick = {
+                        if (!isButtonClicked.value) {
+                            viewModel.insertArticles(news)
+                            buttonText.value = "Faved"
+                        }
+                    }) {
+                        Text(text = buttonText.value)
+                    }
+                }
+            }
+
         }
     }
 }

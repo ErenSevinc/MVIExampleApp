@@ -13,4 +13,5 @@ object Constant {
     const val CATEGORY_SCIENCE = "science"
     const val CATEGORY_SPORTS = "sports"
     const val CATEGORY_TECHNOLOGY = "technology"
+    const val TABLE_NAME_ARTICLES = "articles"
 }
