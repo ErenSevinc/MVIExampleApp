@@ -15,6 +15,8 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -30,11 +32,12 @@ class NewsListViewModel @Inject constructor(
     private val _state = MutableStateFlow<MainState>(MainState.Idle)
     val state: StateFlow<MainState> = _state
 
-    private val _favArticles = MutableStateFlow<Articles?>(null)
-    val favArticles: StateFlow<Articles?> = _favArticles
+    private val _favArticles = MutableStateFlow(emptyList<Articles>())
+    val favArticles = _favArticles.asStateFlow()
 
 
     init {
+        getFavArticles()
         handleIntent()
     }
 
@@ -64,8 +67,19 @@ class NewsListViewModel @Inject constructor(
                     }
 
                     is Resource.Success -> {
+                        var stateList = mutableListOf<Articles>()
                         result.data?.let { response ->
-                            _state.value = MainState.News(news = response)
+                            response.articles?.let { articles->
+                                articles.forEach { item ->
+                                    _favArticles.value.forEach { fav->
+                                        if (fav.url == item.url) {
+                                            item.isFavourite = true
+                                        }
+                                    }
+                                    stateList.add(item)
+                                }
+                            }
+                            _state.value = MainState.News(news = stateList.toList())
                         }
                     }
                 }
@@ -78,21 +92,41 @@ class NewsListViewModel @Inject constructor(
 
     fun insertArticles(articles: Articles) {
         viewModelScope.launch(IO) {
-            articlesRepository.insert(articles)
+            if (_favArticles.value.isEmpty()) {
+                articlesRepository.insert(articles)
+            } else {
+                _favArticles.value.forEach {
+                    if (it.url != articles.url) {
+                        articlesRepository.insert(articles)
+                        articles.isFavourite = true
+                    }
+                }
+            }
         }
     }
 
     fun deleteArticles(articles: Articles) {
         viewModelScope.launch(IO) {
-            articlesRepository.delete(articles)
+            if (_favArticles.value.isNotEmpty()) {
+                articlesRepository.delete(articles)
+                articles.isFavourite = false
+            } else {
+                _favArticles.value.forEach {
+                    if (it.url == articles.url) {
+                        articlesRepository.delete(articles)
+                        articles.isFavourite = false
+                    }
+                }
+            }
         }
     }
 
-    fun getFavArticles() {
+    private fun getFavArticles() {
         viewModelScope.launch(IO) {
-            articlesRepository.getFavArticles()
+            _favArticles.value = articlesRepository.getFavArticles()
         }
     }
+
     override fun onCleared() {
         super.onCleared()
         userIntent.close()

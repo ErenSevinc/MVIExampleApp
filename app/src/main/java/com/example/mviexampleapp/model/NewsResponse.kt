@@ -30,25 +30,28 @@ data class Articles(
 //    val source: Source?,
     @SerialName("author")
     @SerializedName("author")
-    val author: String?,
+    val author: String? = null,
     @SerialName("title")
     @SerializedName("title")
-    val title: String?,
+    val title: String?= null,
     @SerialName("description")
     @SerializedName("description")
-    val description: String?,
+    val description: String?= null,
     @SerialName("url")
     @SerializedName("url")
-    val url: String?,
+    val url: String?= null,
     @SerialName("urlToImage")
     @SerializedName("urlToImage")
-    val urlToImage: String?,
+    val urlToImage: String?= null,
     @SerialName("publishedAt")
     @SerializedName("publishedAt")
-    val publishedAt: String?,
+    val publishedAt: String?= null,
     @SerialName("content")
     @SerializedName("content")
-    val content: String?,
+    val content: String?= null,
+    @SerialName("isFavourite")
+    @SerializedName("isFavourite")
+    var isFavourite: Boolean = false
 )
 
 //@Serializable

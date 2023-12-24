@@ -2,12 +2,14 @@ package com.example.mviexampleapp.db
 
 import com.example.mviexampleapp.model.Articles
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-interface ArticlesRepository {
+class ArticlesRepository @Inject constructor(
+    private val dao: ArticleDao
+) {
 
-    suspend fun insert(articles: Articles)
+    fun insert(articles: Articles) = dao.insert(articles)
+    fun delete(articles: Articles) = dao.delete(articles)
+    fun getFavArticles(): List<Articles> = dao.getFavArticles()
 
-    suspend fun delete(articles: Articles)
-
-    suspend fun getFavArticles(): Flow<List<Articles>>
 }

@@ -1,5 +1,7 @@
 package com.example.mviexampleapp.ui.screens.list
 
+import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -106,7 +108,7 @@ fun NewsListPage(navContorller: NavController) {
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            (result as? MainState.News)?.news?.articles?.let {
+            (result as? MainState.News)?.news?.let {
                 Column(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -253,6 +255,7 @@ fun NewsItem(news: Articles, onClick: (url: String) -> Unit) {
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: String) -> Unit) {
     val isButtonClicked = remember { mutableStateOf(false) }
@@ -267,6 +270,8 @@ fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: St
             containerColor = Color.LightGray
         )
     ) {
+        Log.d("favouire db", viewModel.favArticles.value.toString())
+        Log.d("api res", news.toString())
         Column(modifier = Modifier
             .padding(4.dp)
             .clickable { onClick.invoke(news.url ?: "https://www.google.com") }
@@ -306,7 +311,12 @@ fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: St
                     OutlinedButton(onClick = {
                         if (!isButtonClicked.value) {
                             viewModel.insertArticles(news)
-                            buttonText.value = "Faved"
+                            buttonText.value ="Faved"
+                            isButtonClicked.value = true
+                        } else {
+                            viewModel.deleteArticles(news)
+                            buttonText.value = "Fav"
+                            isButtonClicked.value = false
                         }
                     }) {
                         Text(text = buttonText.value)
