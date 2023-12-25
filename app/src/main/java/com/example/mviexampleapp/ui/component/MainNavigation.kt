@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.mviexampleapp.ui.screens.detail.NewsDetailPage
+import com.example.mviexampleapp.ui.screens.fav.FavNewsPage
 import com.example.mviexampleapp.ui.screens.list.NewsListPage
 import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 
@@ -38,12 +39,10 @@ fun MainNavigation(
             NewsDetailPage( it.arguments?.getString("url") ?: "")
         }
         composable(
-
-            // TODO
             route = MainScreen.Favourites.route,
         ){
             toolbarTitle.value = "Fav News"
-            //TODO new screen
+            FavNewsPage(navController)
         }
     }
 }

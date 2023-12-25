@@ -100,7 +100,6 @@ class MainActivity : ComponentActivity() {
                                 },
                                 colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Color.LightGray),
                                 actions = {
-                                    // TODO
                                     IconButton(onClick = { navController.navigate(MainScreen.Favourites.route) }) {
                                         Icon(
                                             Icons.Outlined.BookmarkBorder,

@@ -38,48 +38,6 @@ import javax.inject.Singleton
 @Module
 class DataModule {
 
-//    @Provides
-//    @Singleton
-//    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-//        return HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-//    }
-//
-//    @Provides
-//    @Singleton
-//    fun provideOkHttpClient(
-//        httpLoggingInterceptor: HttpLoggingInterceptor
-//    ): OkHttpClient {
-//        return OkHttpClient.Builder()
-//            .addInterceptor(httpLoggingInterceptor)
-//            .build()
-//    }
-//
-//    @Provides
-//    @Singleton
-//    fun provideGson(): Gson {
-//        return GsonBuilder()
-//            .create()
-//    }
-//
-//    @Singleton
-//    @Provides
-//    fun provideService(
-//        okHttpClient: OkHttpClient,
-//        gson: Gson
-//    ): ApiService {
-//        return Retrofit.Builder()
-//            .client(okHttpClient)
-//            .baseUrl(Constant.BASE_URL)
-//            .addConverterFactory(GsonConverterFactory.create(gson)).build()
-//            .create(ApiService::class.java)
-//    }
-//
-//    @Provides
-//    fun provideRepository(apiService: ApiService): ApiRepository {
-//        return ApiRepository(apiService)
-//    }
-
-
     @Singleton
     @Provides
     fun provideHttpClient(): HttpClient {

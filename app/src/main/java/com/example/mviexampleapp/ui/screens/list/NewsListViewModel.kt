@@ -48,6 +48,10 @@ class NewsListViewModel @Inject constructor(
                     is MainIntent.GetNews -> {
                         getNews(category = it.category)
                     }
+
+                    is MainIntent.GetFavNews -> {
+
+                    }
                 }
             }
         }
