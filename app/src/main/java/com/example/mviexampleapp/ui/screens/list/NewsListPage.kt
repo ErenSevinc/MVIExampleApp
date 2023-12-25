@@ -121,6 +121,7 @@ fun NewsListPage(navContorller: NavController) {
             }
         }
         AnimatedVisibility(visible = result is MainState.Error) {
+            Log.e("Errorss", (result as? MainState.Error)?.error ?: "")
             Toast.makeText(
                 LocalContext.current,
                 (result as? MainState.Error)?.error ?: "",

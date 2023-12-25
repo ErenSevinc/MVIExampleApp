@@ -54,7 +54,7 @@ class NewsListViewModel @Inject constructor(
     }
 
     private fun getNews(category: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(IO) {
             _state.value = MainState.Loading
             try {
                 when (val result = apiRepository.getHeadlineNews(category = category)) {

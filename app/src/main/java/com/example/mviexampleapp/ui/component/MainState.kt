@@ -2,7 +2,6 @@ package com.example.mviexampleapp.ui.component
 
 
 import com.example.mviexampleapp.model.Articles
-import com.example.mviexampleapp.model.NewsResponse
 
 
 sealed class MainState {
