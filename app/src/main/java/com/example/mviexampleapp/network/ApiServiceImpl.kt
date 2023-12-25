@@ -18,7 +18,9 @@ class ApiServiceImpl @Inject constructor(private val httpClient: HttpClient) : A
     override suspend fun getHeadlineNews(
         country: String?,
         category: String?,
-        apiKey: String?
+        apiKey: String?,
+        page: Int?,
+        pageSize : Int?
     ): NewsResponse {
         return httpClient.get(Constant.BASE_URL) {
             contentType(ContentType.Application.Json)
@@ -27,6 +29,8 @@ class ApiServiceImpl @Inject constructor(private val httpClient: HttpClient) : A
                 parameter(key = "country", value = country)
                 parameter(key = "category", value = category)
                 parameter(key = "apiKey", value = apiKey)
+                parameter(key = "page", value = page)
+                parameter(key = "pageSize", value = pageSize)
             }
         }.body()
     }

@@ -53,7 +53,20 @@ data class Articles(
     @SerialName("isFavourite")
     @SerializedName("isFavourite")
     var isFavourite: Boolean = false
-)
+) {
+    fun doesMatchSearchQuery(query: String): Boolean {
+        val matchingCombination = listOf(
+            title,
+            author,
+            "${title?.first()}",
+            "${author?.first()}"
+        )
+
+        return matchingCombination.any {
+            it?.contains(query, ignoreCase = true) == true
+        }
+    }
+}
 
 //@Serializable
 //@Entity
