@@ -14,8 +14,8 @@ interface ArticleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(articles: Articles)
 
-    @Delete
-    fun delete(studentEntity: Articles)
+    @Query("DELETE FROM articles WHERE id = :id")
+    fun delete(id: Int)
 
     @Query("SELECT * FROM articles")
     fun getFavArticles(): List<Articles>

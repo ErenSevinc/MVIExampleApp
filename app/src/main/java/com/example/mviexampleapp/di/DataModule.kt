@@ -73,7 +73,7 @@ class DataModule {
             AppDatabase::class.java,
             "MyDataBase"
         )
-            .addMigrations(migration)
+//            .addMigrations(migration)
             .build()
     }
 
@@ -93,11 +93,11 @@ class DataModule {
     fun provideEntity() = Articles()
 
 
-    companion object {
-        val migration = object: Migration(1,2) {
-            override fun migrate(database: SupportSQLiteDatabase){
-                database.execSQL("ALTER TABLE articles DD COLUMN createdAt TEXT")
-            }
-        }
-    }
+//    companion object {
+//        val migration = object: Migration(1,2) {
+//            override fun migrate(database: SupportSQLiteDatabase){
+//                database.execSQL("ALTER TABLE articles ADD COLUMN isFavouriteNew INTEGER DEFAULT 0 NOT NULL")
+//            }
+//        }
+//    }
 }

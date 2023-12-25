@@ -26,7 +26,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FavNewsViewModel @Inject constructor(
-    private val apiRepository: ApiRepository,
     private val articlesRepository: ArticlesRepository
 ) : ViewModel() {
 

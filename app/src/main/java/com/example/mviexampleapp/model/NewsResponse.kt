@@ -52,7 +52,7 @@ data class Articles(
     val content: String?= null,
     @SerialName("isFavourite")
     @SerializedName("isFavourite")
-    var isFavourite: Boolean = false
+    var isFavourite: Boolean = false,
 ) {
     fun doesMatchSearchQuery(query: String): Boolean {
         val matchingCombination = listOf(

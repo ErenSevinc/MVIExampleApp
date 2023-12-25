@@ -73,9 +73,10 @@ import kotlin.coroutines.coroutineContext
 
 @Composable
 fun NewsListPage(navContorller: NavController) {
+    val coroutineScope = rememberCoroutineScope()
     val viewModel: NewsListViewModel = hiltViewModel()
     val screenState = viewModel.state.collectAsState()
-    val selectedCategoty = remember { mutableStateOf(Constant.CATEGORY_GENERAL) }
+    val selectedCategory = remember { mutableStateOf(Constant.CATEGORY_GENERAL) }
     val list = listOf(
         Constant.CATEGORY_GENERAL,
         Constant.CATEGORY_BUSINESS,
@@ -85,11 +86,12 @@ fun NewsListPage(navContorller: NavController) {
         Constant.CATEGORY_SPORTS,
         Constant.CATEGORY_TECHNOLOGY
     )
-    val selectedIndex = remember { mutableStateOf(list.indexOf(selectedCategoty.value)) }
+    val selectedIndex = remember { mutableStateOf(list.indexOf(selectedCategory.value)) }
 
     LaunchedEffect(screenState) {
         if (screenState.value == MainState.Idle) {
-            viewModel.userIntent.send(MainIntent.GetNews(selectedCategoty.value))
+            viewModel.userIntent.send(MainIntent.GetFavNews)
+            viewModel.userIntent.send(MainIntent.GetNews(selectedCategory.value))
         }
     }
 
@@ -115,8 +117,16 @@ fun NewsListPage(navContorller: NavController) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    CategoryList(viewModel, list, selectedCategoty, selectedIndex)
-                    NewsList(news = it, navContorller = navContorller, viewModel)
+                    CategoryList(viewModel, list, selectedCategory, selectedIndex)
+                    NewsList(news = it, navContorller = navContorller, onFavClick = {
+                        coroutineScope.launch {
+                            if (!it.isFavourite) {
+                                viewModel.userIntent.send(MainIntent.InsertNews(articles = it, category = selectedCategory.value))
+                            } else {
+                                viewModel.userIntent.send(MainIntent.DeleteNews(articles = it, category = selectedCategory.value))
+                            }
+                        }
+                    })
                 }
             }
         }
@@ -191,7 +201,7 @@ fun CategoryList(
 }
 
 @Composable
-fun NewsList(news: List<Articles>, navContorller: NavController, viewModel: NewsListViewModel) {
+fun NewsList(news: List<Articles>, navContorller: NavController, onFavClick: (Articles) -> Unit) {
     Column() {
         Text(
             modifier = Modifier
@@ -203,20 +213,10 @@ fun NewsList(news: List<Articles>, navContorller: NavController, viewModel: News
         )
         LazyColumn(modifier = Modifier.padding(top = 2.dp)) {
             items(items = news) { item ->
-                /*
-                NewsItem(item) {
+                NewsCardItem(news = item, onClick = {
                     val encodedUrl = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
                     navContorller.navigate(MainScreen.NewsDetail.route + "/" + encodedUrl)
-                }
-                Divider(
-                    color = Color.LightGray,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-                )
-                 */
-                NewsCardItem(news = item, viewModel = viewModel) {
-                    val encodedUrl = URLEncoder.encode(it, StandardCharsets.UTF_8.toString())
-                    navContorller.navigate(MainScreen.NewsDetail.route + "/" + encodedUrl)
-                }
+                }, onFavClick = onFavClick)
             }
         }
     }
@@ -258,8 +258,7 @@ fun NewsItem(news: Articles, onClick: (url: String) -> Unit) {
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: String) -> Unit) {
-    val isButtonClicked = remember { mutableStateOf(false) }
+fun NewsCardItem(news: Articles, onClick: (url: String) -> Unit, onFavClick: (Articles) -> Unit) {
     var buttonText = remember { mutableStateOf("Fav") }
     Card(
         modifier = Modifier
@@ -271,8 +270,6 @@ fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: St
             containerColor = Color.LightGray
         )
     ) {
-        Log.d("favouire db", viewModel.favArticles.value.toString())
-        Log.d("api res", news.toString())
         Column(modifier = Modifier
             .padding(4.dp)
             .clickable { onClick.invoke(news.url ?: "https://www.google.com") }
@@ -310,17 +307,9 @@ fun NewsCardItem(news: Articles, viewModel: NewsListViewModel, onClick: (url: St
                     )
                     Spacer(modifier = Modifier)
                     OutlinedButton(onClick = {
-                        if (!isButtonClicked.value) {
-                            viewModel.insertArticles(news)
-                            buttonText.value ="Faved"
-                            isButtonClicked.value = true
-                        } else {
-                            viewModel.deleteArticles(news)
-                            buttonText.value = "Fav"
-                            isButtonClicked.value = false
-                        }
+                        onFavClick.invoke(news)
                     }) {
-                        Text(text = buttonText.value)
+                        Text(text = if (news.isFavourite) "Faved" else "Fav")
                     }
                 }
             }

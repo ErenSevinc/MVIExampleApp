@@ -37,7 +37,6 @@ class NewsListViewModel @Inject constructor(
 
 
     init {
-        getFavArticles()
         handleIntent()
     }
 
@@ -48,9 +47,14 @@ class NewsListViewModel @Inject constructor(
                     is MainIntent.GetNews -> {
                         getNews(category = it.category)
                     }
-
                     is MainIntent.GetFavNews -> {
-
+                        getFavArticles()
+                    }
+                    is MainIntent.InsertNews -> {
+                        insertArticles(articles = it.articles, category= it.category)
+                    }
+                    is MainIntent.DeleteNews -> {
+                        deleteArticles(articles = it.articles, category= it.category)
                     }
                 }
             }
@@ -73,9 +77,9 @@ class NewsListViewModel @Inject constructor(
                     is Resource.Success -> {
                         var stateList = mutableListOf<Articles>()
                         result.data?.let { response ->
-                            response.articles?.let { articles->
+                            response.articles?.let { articles ->
                                 articles.forEach { item ->
-                                    _favArticles.value.forEach { fav->
+                                    _favArticles.value.forEach { fav ->
                                         if (fav.url == item.url) {
                                             item.isFavourite = true
                                         }
@@ -94,34 +98,28 @@ class NewsListViewModel @Inject constructor(
         }
     }
 
-    fun insertArticles(articles: Articles) {
+    fun insertArticles(articles: Articles, category: String) {
         viewModelScope.launch(IO) {
-            if (_favArticles.value.isEmpty()) {
-                articlesRepository.insert(articles)
-            } else {
-                _favArticles.value.forEach {
-                    if (it.url != articles.url) {
-                        articlesRepository.insert(articles)
-                        articles.isFavourite = true
-                    }
-                }
+            val filteredArticles = _favArticles.value.firstOrNull {
+                it.url == articles.url
             }
+            if (filteredArticles == null) {
+                articlesRepository.insert(articles)
+            }
+            getFavArticles()
+            getNews(category)
         }
     }
 
-    fun deleteArticles(articles: Articles) {
+    fun deleteArticles(articles: Articles, category: String) {
         viewModelScope.launch(IO) {
-            if (_favArticles.value.isNotEmpty()) {
-                articlesRepository.delete(articles)
-                articles.isFavourite = false
-            } else {
-                _favArticles.value.forEach {
-                    if (it.url == articles.url) {
-                        articlesRepository.delete(articles)
-                        articles.isFavourite = false
-                    }
+            _favArticles.value.forEach {
+                if (it.url == articles.url) {
+                    articlesRepository.delete(it.id)
                 }
             }
+            getFavArticles()
+            getNews(category)
         }
     }
 
