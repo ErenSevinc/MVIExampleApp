@@ -5,17 +5,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.mviexampleapp.ui.screens.detail.NewsDetailPage
 import com.example.mviexampleapp.ui.screens.fav.FavNewsPage
 import com.example.mviexampleapp.ui.screens.list.NewsListPage
-import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 
 @Composable
 fun MainNavigation(

@@ -9,8 +9,6 @@ import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.path
-import retrofit2.http.GET
-import retrofit2.http.Query
 import javax.inject.Inject
 
 class ApiServiceImpl @Inject constructor(private val httpClient: HttpClient) : ApiService {

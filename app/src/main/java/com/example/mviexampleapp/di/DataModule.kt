@@ -11,9 +11,6 @@ import com.example.mviexampleapp.model.Articles
 import com.example.mviexampleapp.network.ApiRepository
 import com.example.mviexampleapp.network.ApiService
 import com.example.mviexampleapp.network.ApiServiceImpl
-import com.example.mviexampleapp.utils.Constant
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,14 +21,8 @@ import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.utils.EmptyContent.contentType
-import io.ktor.http.ContentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)

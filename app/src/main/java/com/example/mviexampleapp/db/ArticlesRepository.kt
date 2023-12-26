@@ -1,7 +1,6 @@
 package com.example.mviexampleapp.db
 
 import com.example.mviexampleapp.model.Articles
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class ArticlesRepository @Inject constructor(

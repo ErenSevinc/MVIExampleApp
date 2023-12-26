@@ -1,9 +1,6 @@
 package com.example.mviexampleapp.model
 
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.example.mviexampleapp.utils.Constant
 import com.google.gson.annotations.SerializedName

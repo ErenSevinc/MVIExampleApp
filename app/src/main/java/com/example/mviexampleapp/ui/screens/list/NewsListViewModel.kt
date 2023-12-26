@@ -33,7 +33,6 @@ class NewsListViewModel @Inject constructor(
     val state: StateFlow<MainState> = _state
 
     private val _favArticles = MutableStateFlow(emptyList<Articles>())
-    val favArticles = _favArticles.asStateFlow()
 
 
     init {
@@ -54,7 +53,10 @@ class NewsListViewModel @Inject constructor(
                         insertArticles(articles = it.articles, category= it.category)
                     }
                     is MainIntent.DeleteNews -> {
-                        deleteArticles(articles = it.articles, category= it.category)
+                        deleteArticles(articles = it.articles, category= it.category.toString())
+                    }
+                    else -> {
+
                     }
                 }
             }
@@ -79,9 +81,13 @@ class NewsListViewModel @Inject constructor(
                         result.data?.let { response ->
                             response.articles?.let { articles ->
                                 articles.forEach { item ->
-                                    _favArticles.value.forEach { fav ->
-                                        if (fav.url == item.url) {
-                                            item.isFavourite = true
+                                    if (_favArticles.value.isEmpty()) {
+                                        item.isFavourite = false
+                                    } else {
+                                        _favArticles.value.forEach { fav ->
+                                            if (fav.url == item.url) {
+                                                item.isFavourite = true
+                                            }
                                         }
                                     }
                                     stateList.add(item)
@@ -98,12 +104,13 @@ class NewsListViewModel @Inject constructor(
         }
     }
 
-    fun insertArticles(articles: Articles, category: String) {
+    private fun insertArticles(articles: Articles, category: String) {
         viewModelScope.launch(IO) {
             val filteredArticles = _favArticles.value.firstOrNull {
                 it.url == articles.url
             }
             if (filteredArticles == null) {
+                articles.isFavourite = true
                 articlesRepository.insert(articles)
             }
             getFavArticles()
@@ -111,7 +118,7 @@ class NewsListViewModel @Inject constructor(
         }
     }
 
-    fun deleteArticles(articles: Articles, category: String) {
+    private fun deleteArticles(articles: Articles, category: String) {
         viewModelScope.launch(IO) {
             _favArticles.value.forEach {
                 if (it.url == articles.url) {

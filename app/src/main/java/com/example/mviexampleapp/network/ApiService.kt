@@ -2,9 +2,6 @@ package com.example.mviexampleapp.network
 
 import com.example.mviexampleapp.model.NewsResponse
 import com.example.mviexampleapp.utils.Constant
-import com.example.mviexampleapp.utils.Resource
-import retrofit2.http.GET
-import retrofit2.http.Query
 
 interface ApiService {
 

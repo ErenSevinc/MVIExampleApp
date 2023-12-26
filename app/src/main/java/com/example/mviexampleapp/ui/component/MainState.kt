@@ -1,6 +1,5 @@
 package com.example.mviexampleapp.ui.component
 
-
 import com.example.mviexampleapp.model.Articles
 
 

@@ -1,6 +1,5 @@
 package com.example.mviexampleapp.utils
 
-import java.util.Locale.Category
 
 object Constant {
     const val BASE_URL = "https://newsapi.org"

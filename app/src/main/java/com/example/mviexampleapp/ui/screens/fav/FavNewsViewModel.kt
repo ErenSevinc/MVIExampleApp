@@ -1,26 +1,17 @@
 package com.example.mviexampleapp.ui.screens.fav
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mviexampleapp.db.ArticlesRepository
 import com.example.mviexampleapp.model.Articles
-import com.example.mviexampleapp.network.ApiRepository
 import com.example.mviexampleapp.ui.component.MainIntent
 import com.example.mviexampleapp.ui.component.MainState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,58 +20,77 @@ class FavNewsViewModel @Inject constructor(
     private val articlesRepository: ArticlesRepository
 ) : ViewModel() {
 
-    private val _searchText = MutableStateFlow("")
-    val searchText = _searchText.asStateFlow()
-    private val _isSearch = MutableStateFlow(false)
-    val isSearch = _isSearch.asStateFlow()
-    private val _errorMessage = MutableStateFlow("")
-    val errorMessage = _errorMessage.asStateFlow()
+    val userIntent = Channel<MainIntent>(Channel.UNLIMITED)
+    private val _favNewsState = MutableStateFlow<MainState>(MainState.Idle)
+    val favNewsState: StateFlow<MainState> = _favNewsState
 
-    private val _favNews = MutableStateFlow<List<Articles>?>(null)
-    val favNews = searchText
-        .combine(_favNews) {text, articles ->
-            if (text.isBlank()) {
-                articles
-            } else {
-                delay(2000L)
-                articles?.filter {
-                    it.doesMatchSearchQuery(text)
-                }
-            }
-        }
-        .onEach { _isSearch.update { false } }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            _favNews.value
-        )
 
     init {
-        getFavArticles()
+        handleIntent()
     }
 
-    fun onSearchTextChange(text: String) {
-        _searchText.value = text
-        Log.d("RESULT", _favNews.value.toString())
-    }
+    private fun handleIntent() {
+        viewModelScope.launch {
+            userIntent.consumeAsFlow().collect {
+                when (it) {
+                    is MainIntent.GetFavNews -> {
+                        getFavArticles()
+                    }
+                    is MainIntent.DeleteNews -> {
+                        deleteArticles(articles = it.articles)
+                    }
+                    is MainIntent.SearchNews -> {
+                        searchNews(query = it.query)
+                    }
+                    else -> {
 
-
-    fun getFavArticles() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _isSearch.value = true
-            val list = mutableListOf<Articles>()
-            if (articlesRepository.getFavArticles().isNotEmpty()) {
-                articlesRepository.getFavArticles().forEach { item ->
-                    item.isFavourite = true
-                    list.add(item)
+                    }
                 }
-                _isSearch.value = false
-                _favNews.value = list.toList()
-                list.clear()
-            } else {
-                _isSearch.value = false
-                _errorMessage.value = "You have not favourites news"
             }
         }
+    }
+
+
+    private fun getFavArticles() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _favNewsState.value = MainState.Loading
+            val result = articlesRepository.getFavArticles()
+            if (result.isNotEmpty()) {
+                _favNewsState.value = MainState.News(news = result)
+            } else {
+                _favNewsState.value = MainState.Error(error = "You have not Favourites News")
+            }
+        }
+    }
+
+    private fun deleteArticles(articles: Articles) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = articlesRepository.getFavArticles()
+            result.forEach {
+                if (it.url == articles.url) {
+                    articlesRepository.delete(it.id)
+                }
+            }
+            getFavArticles()
+        }
+    }
+
+    private fun searchNews(query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _favNewsState.value = MainState.Loading
+            val result = articlesRepository.getFavArticles()
+            if (query.isBlank()) {
+                _favNewsState.value = MainState.News(result)
+            } else {
+                _favNewsState.value = MainState.News(result.filter {
+                    it.doesMatchSearchQuery(query)
+                })
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        userIntent.close()
     }
 }
