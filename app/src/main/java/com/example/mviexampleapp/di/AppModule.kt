@@ -2,8 +2,6 @@ package com.example.mviexampleapp.di
 
 import android.app.Application
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.mviexampleapp.db.AppDatabase
 import com.example.mviexampleapp.db.ArticleDao
 import com.example.mviexampleapp.db.ArticlesRepository
@@ -27,7 +25,7 @@ import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
-class DataModule {
+object AppModule {
 
     @Singleton
     @Provides

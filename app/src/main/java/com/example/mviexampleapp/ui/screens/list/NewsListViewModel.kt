@@ -1,28 +1,23 @@
 package com.example.mviexampleapp.ui.screens.list
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mviexampleapp.db.ArticlesRepository
 import com.example.mviexampleapp.model.Articles
 import com.example.mviexampleapp.network.ApiRepository
-import com.example.mviexampleapp.ui.component.MainIntent
-import com.example.mviexampleapp.ui.component.MainState
-import com.example.mviexampleapp.utils.Constant
+import com.example.mviexampleapp.ui.component.intent.NewsListIntent
+import com.example.mviexampleapp.ui.component.state.NewsListState
 import com.example.mviexampleapp.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel

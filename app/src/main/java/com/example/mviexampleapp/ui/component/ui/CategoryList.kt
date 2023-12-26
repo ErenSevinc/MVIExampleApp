@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mviexampleapp.ui.screens.list.NewsListIntent
+import com.example.mviexampleapp.ui.component.intent.NewsListIntent
 import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 import kotlinx.coroutines.launch
 

@@ -23,8 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.mviexampleapp.ui.component.MainNavigation
-import com.example.mviexampleapp.ui.component.MainScreen
+import com.example.mviexampleapp.ui.component.navigation.MainNavigation
+import com.example.mviexampleapp.ui.component.navigation.MainScreen
 import com.example.mviexampleapp.ui.theme.MVIExampleAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -4,14 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mviexampleapp.db.ArticlesRepository
 import com.example.mviexampleapp.model.Articles
-import com.example.mviexampleapp.ui.component.MainIntent
-import com.example.mviexampleapp.ui.component.MainState
+import com.example.mviexampleapp.ui.component.intent.FavNewsIntent
+import com.example.mviexampleapp.ui.component.state.FavNewsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,9 +22,9 @@ class FavNewsViewModel @Inject constructor(
     private val articlesRepository: ArticlesRepository
 ) : ViewModel() {
 
-    val userIntent = Channel<MainIntent>(Channel.UNLIMITED)
-    private val _favNewsState = MutableStateFlow<MainState>(MainState.Idle)
-    val favNewsState: StateFlow<MainState> = _favNewsState
+    val userIntent = Channel<FavNewsIntent>(Channel.UNLIMITED)
+    private val _favNewsState = MutableStateFlow<FavNewsState>(FavNewsState())
+    val favNewsState: StateFlow<FavNewsState> = _favNewsState
 
 
     init {
@@ -33,17 +35,16 @@ class FavNewsViewModel @Inject constructor(
         viewModelScope.launch {
             userIntent.consumeAsFlow().collect {
                 when (it) {
-                    is MainIntent.GetFavNews -> {
+                    is FavNewsIntent.GetFavNews -> {
                         getFavArticles()
                     }
-                    is MainIntent.DeleteNews -> {
+
+                    is FavNewsIntent.DeleteNews -> {
                         deleteArticles(articles = it.articles)
                     }
-                    is MainIntent.SearchNews -> {
-                        searchNews(query = it.query)
-                    }
-                    else -> {
 
+                    is FavNewsIntent.SearchNews -> {
+                        searchNews(query = it.query)
                     }
                 }
             }
@@ -53,12 +54,13 @@ class FavNewsViewModel @Inject constructor(
 
     private fun getFavArticles() {
         viewModelScope.launch(Dispatchers.IO) {
-            _favNewsState.value = MainState.Loading
+            _favNewsState.update { it.copy(loading = true) }
+            delay(1000)
             val result = articlesRepository.getFavArticles()
             if (result.isNotEmpty()) {
-                _favNewsState.value = MainState.News(news = result)
+                _favNewsState.update { it.copy(news = result, loading = false) }
             } else {
-                _favNewsState.value = MainState.Error(error = "You have not Favourites News")
+                _favNewsState.update { it.copy(errorMessage = "You have not Favourites News") }
             }
         }
     }
@@ -77,14 +79,17 @@ class FavNewsViewModel @Inject constructor(
 
     private fun searchNews(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _favNewsState.value = MainState.Loading
+            _favNewsState.update { it.copy(loading = true) }
+            delay(1000)
             val result = articlesRepository.getFavArticles()
             if (query.isBlank()) {
-                _favNewsState.value = MainState.News(result)
+                _favNewsState.update { it.copy(news = result, loading = false) }
             } else {
-                _favNewsState.value = MainState.News(result.filter {
-                    it.doesMatchSearchQuery(query)
-                })
+                _favNewsState.update {
+                    it.copy(news = result.filter { articles ->
+                        articles.doesMatchSearchQuery(query)
+                    }, loading = false)
+                }
             }
         }
     }

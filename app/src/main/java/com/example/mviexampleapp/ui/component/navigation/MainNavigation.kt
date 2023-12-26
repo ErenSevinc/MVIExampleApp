@@ -1,4 +1,4 @@
-package com.example.mviexampleapp.ui.component
+package com.example.mviexampleapp.ui.component.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding

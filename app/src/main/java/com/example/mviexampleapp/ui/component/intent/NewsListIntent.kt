@@ -1,4 +1,4 @@
-package com.example.mviexampleapp.ui.screens.list
+package com.example.mviexampleapp.ui.component.intent
 
 import com.example.mviexampleapp.model.Articles
 

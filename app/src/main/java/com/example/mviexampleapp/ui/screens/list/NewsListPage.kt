@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,8 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
-import com.example.mviexampleapp.ui.component.MainIntent
-import com.example.mviexampleapp.ui.component.MainState
+import com.example.mviexampleapp.ui.component.intent.NewsListIntent
 import com.example.mviexampleapp.ui.component.ui.CategoryList
 import com.example.mviexampleapp.ui.component.ui.LoadingScreen
 import com.example.mviexampleapp.ui.component.ui.NewsList

@@ -1,4 +1,4 @@
-package com.example.mviexampleapp.ui.component
+package com.example.mviexampleapp.ui.component.navigation
 
 sealed class MainScreen(val route: String) {
     object NewsList: MainScreen(route = "NewsListPage")

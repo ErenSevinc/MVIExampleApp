@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mviexampleapp.R
 import com.example.mviexampleapp.model.Articles
-import com.example.mviexampleapp.ui.component.MainScreen
+import com.example.mviexampleapp.ui.component.navigation.MainScreen
 import com.example.mviexampleapp.utils.toDate
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
