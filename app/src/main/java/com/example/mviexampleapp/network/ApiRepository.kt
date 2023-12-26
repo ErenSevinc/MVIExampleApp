@@ -3,29 +3,28 @@ package com.example.mviexampleapp.network
 import com.example.mviexampleapp.model.NewsResponse
 import com.example.mviexampleapp.utils.Constant
 import com.example.mviexampleapp.utils.Resource
-import java.lang.Exception
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class ApiRepository @Inject constructor(private val apiService: ApiService) {
 
-    suspend fun getHeadlineNews(
-        country: String? = null,
+    fun getHeadlineNews(
         category: String? = null,
-        apiKey: String? = null,
-        page: Int? = null,
-        pageSize: Int? = null
-    )
-            : Resource<NewsResponse> {
-        return try {
-            if (category != null) {
-                val result = apiService.getHeadlineNews(category = category)
-                Resource.Success(data = result)
+    ): Flow<Resource<NewsResponse>> {
+        return flow {
+            emit(Resource.Loading)
+            val response = if (category != null) {
+                apiService.getHeadlineNews(category = category)
             } else {
-                val result = apiService.getHeadlineNews(category = Constant.CATEGORY_GENERAL)
-                Resource.Success(data = result)
+                apiService.getHeadlineNews(category = Constant.CATEGORY_GENERAL)
             }
-        } catch (e: Exception) {
-            Resource.Error(errorMessage = e.message.toString())
-        }
+            emit(Resource.Success(response))
+        }.catch {
+            emit(Resource.Error(errorMessage = it.message))
+        }.flowOn(Dispatchers.IO)
     }
 }

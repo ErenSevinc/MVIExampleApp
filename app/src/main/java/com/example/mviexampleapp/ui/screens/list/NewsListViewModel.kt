@@ -18,6 +18,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
@@ -28,9 +31,9 @@ class NewsListViewModel @Inject constructor(
     private val articlesRepository: ArticlesRepository
 ) : ViewModel() {
 
-    val userIntent = Channel<MainIntent>(Channel.UNLIMITED)
-    private val _state = MutableStateFlow<MainState>(MainState.Idle)
-    val state: StateFlow<MainState> = _state
+    val userIntent = Channel<NewsListIntent>(Channel.UNLIMITED)
+    private val _state = MutableStateFlow<NewsListState>(NewsListState())
+    val state: StateFlow<NewsListState> = _state
 
     private val _favArticles = MutableStateFlow(emptyList<Articles>())
 
@@ -43,20 +46,20 @@ class NewsListViewModel @Inject constructor(
         viewModelScope.launch {
             userIntent.consumeAsFlow().collect {
                 when (it) {
-                    is MainIntent.GetNews -> {
+                    is NewsListIntent.GetNews -> {
                         getNews(category = it.category)
                     }
-                    is MainIntent.GetFavNews -> {
+
+                    is NewsListIntent.GetFavNews -> {
                         getFavArticles()
                     }
-                    is MainIntent.InsertNews -> {
-                        insertArticles(articles = it.articles, category= it.category)
-                    }
-                    is MainIntent.DeleteNews -> {
-                        deleteArticles(articles = it.articles, category= it.category.toString())
-                    }
-                    else -> {
 
+                    is NewsListIntent.InsertNews -> {
+                        insertArticles(articles = it.articles, category = it.category)
+                    }
+
+                    is NewsListIntent.DeleteNews -> {
+                        deleteArticles(articles = it.articles, category = it.category.toString())
                     }
                 }
             }
@@ -64,20 +67,19 @@ class NewsListViewModel @Inject constructor(
     }
 
     private fun getNews(category: String) {
-        viewModelScope.launch(IO) {
-            _state.value = MainState.Loading
-            try {
-                when (val result = apiRepository.getHeadlineNews(category = category)) {
-                    is Resource.Loading -> {
-                        _state.value = MainState.Loading
+        apiRepository.getHeadlineNews(category)
+            .onEach { result ->
+                when (result) {
+                    is Resource.Error -> {
+                        _state.update { it.copy(errorMessage = result.errorMessage) }
                     }
 
-                    is Resource.Error -> {
-                        _state.value = MainState.Error(result.errorMessage)
+                    Resource.Loading -> {
+                        _state.update { it.copy(loading = true) }
                     }
 
                     is Resource.Success -> {
-                        var stateList = mutableListOf<Articles>()
+                        val stateList = mutableListOf<Articles>()
                         result.data?.let { response ->
                             response.articles?.let { articles ->
                                 articles.forEach { item ->
@@ -93,15 +95,12 @@ class NewsListViewModel @Inject constructor(
                                     stateList.add(item)
                                 }
                             }
-                            _state.value = MainState.News(news = stateList.toList())
+                            _state.update { it.copy(news = stateList.toList(), loading = false) }
                         }
                     }
                 }
-            } catch (e: Exception) {
-                _state.value = MainState.Error(error = e.localizedMessage.toString())
             }
-
-        }
+            .launchIn(viewModelScope)
     }
 
     private fun insertArticles(articles: Articles, category: String) {

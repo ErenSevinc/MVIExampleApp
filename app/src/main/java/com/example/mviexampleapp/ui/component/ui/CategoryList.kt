@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mviexampleapp.ui.component.MainIntent
+import com.example.mviexampleapp.ui.screens.list.NewsListIntent
 import com.example.mviexampleapp.ui.screens.list.NewsListViewModel
 import kotlinx.coroutines.launch
 
@@ -55,7 +55,8 @@ fun CategoryList(
                         category.value = item
                         selectedIndex.value = index
                         coroutineScope.launch {
-                            viewModel.userIntent.send(MainIntent.GetNews(category = item))
+                            viewModel.userIntent.send(NewsListIntent.GetFavNews)
+                            viewModel.userIntent.send(NewsListIntent.GetNews(category = item))
                         }
                     },
                     colors = ButtonDefaults.outlinedButtonColors(

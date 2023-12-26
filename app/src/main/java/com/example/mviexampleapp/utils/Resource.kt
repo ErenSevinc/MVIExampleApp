@@ -1,7 +1,7 @@
 package com.example.mviexampleapp.utils
 
-sealed class Resource<T> (val data: T?= null, val errorMessage: String? = null) {
-    class Loading<T>: Resource<T>()
-    class Error<T>(errorMessage: String?): Resource<T>(errorMessage = errorMessage)
-    class Success<T>(data: T?): Resource<T>(data = data)
+sealed class Resource<out T> {
+    object Loading: Resource<Nothing>()
+    data class Error(val errorMessage: String?): Resource<Nothing>()
+    data class Success<out T>(val data: T?): Resource<T>()
 }
