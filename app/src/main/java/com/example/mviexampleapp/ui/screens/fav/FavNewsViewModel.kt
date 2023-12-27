@@ -60,7 +60,7 @@ class FavNewsViewModel @Inject constructor(
             if (result.isNotEmpty()) {
                 _favNewsState.update { it.copy(news = result, loading = false) }
             } else {
-                _favNewsState.update { it.copy(errorMessage = "You have not Favourites News") }
+                _favNewsState.update { it.copy(errorMessage = "You have not Favourites News" , loading = false, news = emptyList()) }
             }
         }
     }
